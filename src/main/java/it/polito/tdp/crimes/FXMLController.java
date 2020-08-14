@@ -5,8 +5,10 @@
 package it.polito.tdp.crimes;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.crimes.model.DistrictDistance;
 import it.polito.tdp.crimes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -25,13 +27,13 @@ public class FXMLController {
     private URL location;
 
     @FXML // fx:id="boxAnno"
-    private ComboBox<?> boxAnno; // Value injected by FXMLLoader
+    private ComboBox<Integer> boxAnno; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxMese"
-    private ComboBox<?> boxMese; // Value injected by FXMLLoader
+    private ComboBox<Integer> boxMese; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxGiorno"
-    private ComboBox<?> boxGiorno; // Value injected by FXMLLoader
+    private ComboBox<Integer> boxGiorno; // Value injected by FXMLLoader
 
     @FXML // fx:id="btnCreaReteCittadina"
     private Button btnCreaReteCittadina; // Value injected by FXMLLoader
@@ -47,7 +49,25 @@ public class FXMLController {
 
     @FXML
     void doCreaReteCittadina(ActionEvent event) {
-
+    	this.txtResult.clear();
+    	Integer year=this.boxAnno.getValue();
+    	if(year==null) {
+    		txtResult.appendText("Selezionare un anno.\n");
+    		return;
+    	}
+    	this.model.creaGrafo(year);
+    	int vertici=model.numVertici();
+    	txtResult.appendText(String.format("Nel grafo creato ci sono %d vertici e %d archi.\n", vertici, model.numArchi()));
+    	
+    	for(Integer district: model.getDistricts()) {
+    		List<DistrictDistance> vicini=model.getAdiacenti(district);
+    		txtResult.appendText("\nVicini del distretto "+district+":\n");
+    		for(DistrictDistance dd: vicini) {
+    			txtResult.appendText(String.format("%d: %.2f Km\n", dd.getId(),dd.getDistance()));
+    		}
+    	}
+    	this.boxMese.getItems().addAll(model.getMesi(year));
+    	this.boxGiorno.getItems().addAll(model.getGiorni(year));
     }
 
     @FXML
@@ -69,5 +89,6 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.boxAnno.getItems().addAll(model.getYears());
     }
 }
